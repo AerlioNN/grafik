@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Grafik 2026 - Nowe Kolory</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            background: #121212; 
+            color: #e0e0e0; 
+            padding: 20px; 
+            margin: 0; 
+        }
+        
+        .container { 
+            background: #1e1e1e; 
+            padding: 20px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            max-width: 95vw;
+            margin: auto;
+            border: 1px solid #333;
+            margin-bottom: 30px;
+        }
+
+        h1, h2 { color: #bb86fc; margin: 0; font-weight: 300; }
+
+        .table-wrapper {
+            overflow-x: auto;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background: #1e1e1e;
+        }
+
+        table { 
+            border-collapse: separate; 
+            border-spacing: 0;
+            width: 100%; 
+            font-size: 11px;
+            white-space: nowrap;
+        }
+
+        th, td { 
+            border-right: 1px solid #333; 
+            border-bottom: 1px solid #333; 
+            padding: 10px 14px; 
+            text-align: center; 
+            min-width: 80px; 
+            background: #1e1e1e;
+            color: #b0b0b0;
+        }
+
+        /* NOWE KOLORY ZGODNIE Z PROŚBĄ */
+        .rano { background-color: #d1b741 !important; color: #121212 !important; font-weight: bold; }
+        .popoludnie { background-color: #274091 !important; color: #ffffff !important; }
+        .wolne { background-color: #67c1c9 !important; color: #121212 !important; font-weight: 500; }
+        
+        /* TWOJA NIEDZIELA */
+        .niedziela { background-color: #ae36d6 !important; color: #ffffff !important; font-weight: bold; }
+
+        thead th { background: #2d2d2d; color: #bb86fc; position: sticky; top: 0; z-index: 10; }
+
+        td:first-child, th:first-child { 
+            position: sticky; left: 0; z-index: 11; background: #252525; 
+            font-weight: bold; text-align: left; min-width: 170px;
+            border-right: 3px solid #bb86fc; color: #ffffff;
+        }
+
+        /* NAWIGACJA KALENDARZA */
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .nav-btn {
+            background: #bb86fc;
+            color: #121212;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .nav-btn:hover { background: #9965f4; }
+        .nav-btn:disabled { background: #444; color: #888; cursor: not-allowed; }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+        }
+
+        .calendar-day-header {
+            text-align: center;
+            font-weight: bold;
+            color: #bb86fc;
+            padding: 10px;
+            background: #2d2d2d;
+            border-radius: 4px;
+        }
+
+        .calendar-cell {
+            background: #252525;
+            border: 1px solid #333;
+            border-radius: 6px;
+            min-height: 80px;
+            padding: 8px;
+            transition: 0.2s;
+        }
+
+        .day-number { font-size: 14px; font-weight: bold; margin-bottom: 5px; display: block; }
+        .shift-info { font-size: 11px; padding: 6px; border-radius: 4px; text-align: center; min-height: 24px; display: flex; align-items: center; justify-content: center; }
+        .empty-cell { background: transparent; border: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Pełny Grafik - Widok Tabeli</h1>
+    <div class="table-wrapper">
+        <div id="table-output"></div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="calendar-header">
+        <button id="prevBtn" class="nav-btn" onclick="changeMonth(-1)">← Luty</button>
+        <h2 id="monthTitle">Marzec 2026</h2>
+        <button id="nextBtn" class="nav-btn" onclick="changeMonth(1)">Marzec →</button>
+    </div>
+    
+    <div class="calendar-grid">
+        <div class="calendar-day-header">Pn</div>
+        <div class="calendar-day-header">Wt</div>
+        <div class="calendar-day-header">Śr</div>
+        <div class="calendar-day-header">Cz</div>
+        <div class="calendar-day-header">Pt</div>
+        <div class="calendar-day-header">So</div>
+        <div class="calendar-day-header">Nd</div>
+    </div>
+    <div class="calendar-grid" id="calendar-cells" style="margin-top:10px;">
+        </div>
+</div>
+
+<script>
+    const rawData = `Feb-26																													mar.26																															
+	N 1	Pn 2	Wt 3	Śr 4	Cz 5	Pt 6	So 7	N 8	Pn 9	Wt 10	Śr 11	Cz 12	Pt 13	So 14	N 15	Pn 16	Wt 17	Śr 18	Cz 19	Pt 20	So 21	N 22	Pn 23	Wt 24	Śr 25	Cz 26	Pt 27	So 28	N 1	Pn 2	Wt 3	Śr 4	Cz 5	Pt 6	So 7	N 8	Pn 9	Wt 10	Śr 11	Cz 12	Pt 13	So 14	N 15	Pn 16	Wt 17	Śr 18	Cz 19	Pt 20	So 21	N 22	Pn 23	Wt 24	Śr 25	Cz 26	Pt 27	So 28	N 29	Pn 30	Wt 31		
+Prawucki Senastian	06:00 14:00	06:00 14:00	06:00 14:00	06:00 14:00	06:00 14:00	WNŚ (02-01)	06:00 14:00	06:00 14:00	14:00 22:00	14:00 22:00	14:00 22:00	WNŚ (02-08)	14:00 22:00	W5	06:00 14:00	WNŚ (02-15)	14:00 22:00	WW5 (02-07)	06:00 14:00	06:00 14:00	W5	NŚ	14:00 22:00	14:00 22:00	14:00 22:00	14:00 22:00	14:00 22:00	W5	NŚ	14:00 22:00	14:00 22:00	14:00 22:00	WNŚ (03-08)	06:00 14:00	W5	14:00 22:00	14:00 22:00	WW5 (03-14)	WNŚ (03-15)	06:00 14:00	06:00 14:00	06:00 14:00	06:00 14:00	06:00 14:00	WNŚ (03-22)	06:00 14:00	06:00 14:00	14:00 22:00	14:00 22:00	14:00 22:00	WW5 (03-21)	WW5 (03-28)	06:00 14:00	14:00 22:00	14:00 22:00	14:00 22:00	NŚ	06:00 14:00	14:00 22:00	176	
+Administrator BD																																																												22	
+Kolega 	NŚ	14:00 22:00	14:00 22:00	14:00 22:00	14:00 22:00	14:00 22:00	W5	14:00 22:00	WNŚ (02-08)	06:00 14:00	06:00 14:00	06:00 14:00	06:00 14:00	06:00 14:00	NŚ	06:00 14:00	WNŚ (02-22)	14:00 22:00	14:00 22:00	14:00 22:00	W5	06:00 14:00	06:00 14:00	WW5 (02-14)	06:00 14:00	06:00 14:00	06:00 14:00	W5	06:00 14:00	06:00 14:00	06:00 14:00	06:00 14:00	14:00 22:00	WNŚ (03-01)	06:00 14:00	NŚ	06:00 14:00	14:00 22:00	14:00 22:00	WNŚ (03-15)	14:00 22:00	14:00 22:00	14:00 22:00	14:00 22:00	14:00 22:00	WW5 (03-07)	WW5 (03-14)	06:00 14:00	W5	NŚ	14:00 22:00	14:00 22:00	14:00 22:00	WNŚ (03-29)	06:00 14:00	06:00 14:00	14:00 22:00	14:00 22:00	WW5 (03-28)	176	
+Administrator BD																																																												22	
+`;
+
+    let currentViewMonth = 1; 
+    let globalLabels = [];
+    let globalShifts = [];
+
+    // Funkcja sprawdzająca czy kod to "Wolne"
+    function isFree(text) {
+        const freeCodes = ['W', 'W5', 'WW5', 'NŚ', 'WNŚ'];
+        // Sprawdzamy czy tekst zawiera któryś z kodów jako osobne słowo lub na początku
+        return freeCodes.some(code => text === code || text.startsWith(code + ' (') || text.startsWith(code));
+    }
+
+    function parseData() {
+        const rows = rawData.trim().split('\n');
+        globalLabels = rows[1].split('\t');
+        globalShifts = rows[2].split('\t');
+        
+        let html = '<table><thead>';
+        rows.forEach((row, index) => {
+            const columns = row.split('\t');
+            html += '<tr>';
+            columns.forEach((col) => {
+                let className = '';
+                const cellText = col.trim();
+                
+                if (index === 1 && cellText.startsWith('N ')) className = 'niedziela';
+                if (index > 1) {
+                    if (cellText.includes('06:00')) className = 'rano';
+                    else if (cellText.includes('14:00')) className = 'popoludnie';
+                    else if (isFree(cellText)) className = 'wolne';
+                }
+                const tag = (index === 0 || index === 1) ? 'th' : 'td';
+                html += `<${tag} class="${className}">${col}</${tag}>`;
+            });
+            html += '</tr>';
+            if (index === 1) html += '</thead><tbody>';
+        });
+        document.getElementById('table-output').innerHTML = html + '</tbody></table>';
+        renderCalendar();
+    }
+
+    function renderCalendar() {
+        const grid = document.getElementById('calendar-cells');
+        grid.innerHTML = '';
+        let startIdx, daysCount, monthName, emptyCellsBefore;
+
+        if (currentViewMonth === 0) { 
+            startIdx = 1; daysCount = 28; monthName = "Luty 2026"; emptyCellsBefore = 6;
+            document.getElementById('prevBtn').disabled = true;
+            document.getElementById('nextBtn').disabled = false;
+        } else { 
+            startIdx = 29; daysCount = 31; monthName = "Marzec 2026"; emptyCellsBefore = 6;
+            document.getElementById('prevBtn').disabled = false;
+            document.getElementById('nextBtn').disabled = true;
+        }
+
+        document.getElementById('monthTitle').innerText = monthName;
+
+        for(let i=0; i < emptyCellsBefore; i++) {
+            const empty = document.createElement('div');
+            empty.className = 'calendar-cell empty-cell';
+            grid.appendChild(empty);
+        }
+
+        for(let i = startIdx; i < startIdx + daysCount; i++) {
+            const dayLabel = globalLabels[i].trim();
+            const shiftText = globalShifts[i].trim();
+            const dayNum = dayLabel.split(' ')[1];
+            
+            const cell = document.createElement('div');
+            cell.className = 'calendar-cell';
+            
+            let statusClass = '';
+            if (shiftText.includes('06:00')) statusClass = 'rano';
+            else if (shiftText.includes('14:00')) statusClass = 'popoludnie';
+            else if (isFree(shiftText)) statusClass = 'wolne';
+            
+            // Kolorowanie numeru dnia na fioletowo w niedziele
+            const dayNumClass = dayLabel.startsWith('N ') ? 'niedziela' : '';
+
+            cell.innerHTML = `
+                <span class="day-number" style="${dayLabel.startsWith('N ') ? 'color:#ae36d6' : ''}">${dayNum}</span>
+                <div class="shift-info ${statusClass}">${shiftText || '---'}</div>
+            `;
+            grid.appendChild(cell);
+        }
+    }
+
+    function changeMonth(dir) {
+        currentViewMonth += dir;
+        renderCalendar();
+    }
+
+    parseData();
+</script>
+
+</body>
+</html>
